@@ -15,6 +15,10 @@ library(rvest)
     ## 
     ##     guess_encoding
 
+``` r
+library(p8105.datasets)
+```
+
 ## Mostly use string vectors
 
 ``` r
@@ -248,3 +252,127 @@ marj_df |>
 ```
 
 <img src="Strings-and-Factors_files/figure-gfm/unnamed-chunk-11-1.png" width="90%" />
+
+## Restaurant inspections
+
+``` r
+data("rest_inspec")
+```
+
+``` r
+rest_inspec |> 
+  group_by(boro, grade) |> 
+  summarize(n = n()) |> 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+```
+
+    ## `summarise()` has grouped output by 'boro'. You can override using the
+    ## `.groups` argument.
+
+    ## # A tibble: 6 × 9
+    ## # Groups:   boro [6]
+    ##   boro              A     B     C  `NA`     N     P     Z     G
+    ##   <chr>         <int> <int> <int> <int> <int> <int> <int> <int>
+    ## 1 0                33     9     6    67    NA    NA    NA    NA
+    ## 2 Bronx         14071  2611   976 17190   161   236   605    NA
+    ## 3 Brooklyn      38896  6423  2194 49825   345   782  1168     2
+    ## 4 Manhattan     61675  9107  3600 76581   591   924  1816     3
+    ## 5 Queens        36258  5526  1996 44136   350   604  1287    NA
+    ## 6 Staten Island  5410   855   248  6315    71    61   116    NA
+
+Update the dataset
+
+``` r
+rest_inspec =
+  rest_inspec|> 
+  filter(grade %in% c("A", "B", "C"), boro != 0)
+```
+
+Look for pizza places:
+
+``` r
+rest_inspec |> 
+  filter(str_detect(dba, "Pizza")) |> 
+  group_by(boro, grade) |> 
+  summarize(n = n()) |> 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+```
+
+    ## `summarise()` has grouped output by 'boro'. You can override using the
+    ## `.groups` argument.
+
+    ## # A tibble: 4 × 3
+    ## # Groups:   boro [4]
+    ##   boro          A     B
+    ##   <chr>     <int> <int>
+    ## 1 Bronx        15     3
+    ## 2 Brooklyn     15    NA
+    ## 3 Manhattan    13     3
+    ## 4 Queens       11     4
+
+``` r
+rest_inspec |> 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) |> 
+  group_by(boro, grade) |> 
+  summarize(n = n()) |> 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+```
+
+    ## `summarise()` has grouped output by 'boro'. You can override using the
+    ## `.groups` argument.
+
+    ## # A tibble: 5 × 4
+    ## # Groups:   boro [5]
+    ##   boro              A     B     C
+    ##   <chr>         <int> <int> <int>
+    ## 1 Bronx          1201   261    98
+    ## 2 Brooklyn       1919   291    95
+    ## 3 Manhattan      2091   400    96
+    ## 4 Queens         1695   239    78
+    ## 5 Staten Island   328    60    15
+
+Let’s make a plot:
+
+``` r
+rest_inspec |> 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) |> 
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+<img src="Strings-and-Factors_files/figure-gfm/unnamed-chunk-17-1.png" width="90%" />
+
+This does not work as intended:
+
+``` r
+rest_inspec |> 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) |> 
+  mutate(boro = fct_infreq(boro),
+         boro = str_replace(boro, "Manhattan", "The City")) |> # goes back to alphabetic order
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+<img src="Strings-and-Factors_files/figure-gfm/unnamed-chunk-18-1.png" width="90%" />
+
+This works:
+
+``` r
+rest_inspec |> 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) |> 
+  mutate(boro = fct_infreq(boro),
+         boro = fct_recode(boro, "The City" ="Manhattan")) |> # Still remains the order, only change label
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+<img src="Strings-and-Factors_files/figure-gfm/unnamed-chunk-19-1.png" width="90%" />

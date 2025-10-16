@@ -28,6 +28,7 @@ Load important packages
 
 ```{r}
 library(rvest)
+library(p8105.datasets)
 ```
 
 
@@ -176,5 +177,85 @@ marj_df |>
   ggplot(aes(x = State, y = percent, color = year)) +
   geom_point() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+## Restaurant inspections
+```{r}
+data("rest_inspec")
+```
+
+```{r}
+rest_inspec |> 
+  group_by(boro, grade) |> 
+  summarize(n = n()) |> 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+```
+
+
+Update the dataset
+
+```{r}
+rest_inspec =
+  rest_inspec|> 
+  filter(grade %in% c("A", "B", "C"), boro != 0)
+```
+
+Look for pizza places:
+
+```{r}
+rest_inspec |> 
+  filter(str_detect(dba, "Pizza")) |> 
+  group_by(boro, grade) |> 
+  summarize(n = n()) |> 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+```
+
+
+```{r}
+rest_inspec |> 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) |> 
+  group_by(boro, grade) |> 
+  summarize(n = n()) |> 
+  pivot_wider(
+    names_from = grade,
+    values_from = n
+  )
+```
+
+Let's make a plot:
+
+```{r}
+rest_inspec |> 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) |> 
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+This does not work as intended:
+```{r}
+rest_inspec |> 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) |> 
+  mutate(boro = fct_infreq(boro),
+         boro = str_replace(boro, "Manhattan", "The City")) |> # goes back to alphabetic order
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+This works:
+
+```{r}
+rest_inspec |> 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) |> 
+  mutate(boro = fct_infreq(boro),
+         boro = fct_recode(boro, "The City" ="Manhattan")) |> # Still remains the order, only change label
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
 ```
 
