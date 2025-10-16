@@ -30,6 +30,98 @@ Load important packages
 library(rvest)
 ```
 
+
+## Mostly use string vectors
+
+```{r}
+string_vector = c("my", "name", "is", "jeff")
+
+str_detect(string_vector, "jeff")
+str_detect(string_vector, "Jeff") # case sensitive
+str_detect(string_vector, "e")
+
+str_replace(string_vector, "jeff", "Jeff")
+str_replace(string_vector, "e", "E")
+
+str_replace(string_vector, "e", "")
+
+str_remove(string_vector, "e")
+```
+
+copied(from p8105.com)
+
+```{r}
+string_vec = c(
+  "i think we all rule for participating",
+  "i think i have been caught",
+  "i think this will be quite fun actually",
+  "it will be fun, i think"
+  )
+
+str_detect(string_vec, "i think")
+str_detect(string_vec, "^i think") # find at the start of string
+str_detect(string_vec, "i think$") # find at the end of string
+
+str_remove(string_vec, "i think$")
+```
+
+
+Pumpkin themed example
+
+```{r}
+string_vec = c(
+  "Time for a Pumpkin Spice Latte!",
+  "went to the #pumpkinpatch last weekend",
+  "Pumpkin Pie is obviously the best pie",
+  "SMASHING PUMPKINS -- LIVE IN CONCERT!!"
+  )
+
+str_detect(string_vec, "pumpkin")
+str_detect(string_vec, "Pumpkin")
+
+str_detect(string_vec, "[Pp]umpkin") # everything in the bracket is what we want
+
+```
+
+Let's more complicated:
+
+```{r}
+string_vec = c(
+  '7th inning stretch',
+  '1st half soon to begin. Texas won the toss.',
+  'she is 5 feet 4 inches tall',
+  '3AM - cant sleep :('
+  )
+
+str_detect(string_vec, "[0-9]")
+str_detect(string_vec, "[0-9][A-Z]")
+str_detect(string_vec, "[0-9][a-zA-Z]")
+```
+
+```{r}
+string_vec = c(
+  'Its 7:11 in the evening',
+  'want to go to 7-11?',
+  'my flight is AA711',
+  'NetBios: scanning ip 203.167.114.66'
+  )
+
+str_detect(string_vec, "7.1") # . means everything
+str_detect(string_vec, "7\\.1") # find special characters
+```
+
+## Factors
+
+```{r}
+vec_sex = factor(c("male", "male", "female", "female")) # alphabetical order
+vec_sex
+
+as.numeric(vec_sex)
+
+vec_sex = fct_inorder(vec_sex) # what comes first is first
+vec_sex
+```
+
 Import NDSUH data from the web
 
 ```{r}
